@@ -3,8 +3,7 @@ version = "1.0-3"
 
 source = {
   url = "git://github.com/vphoa342/kong-jwt2header",
-  tag = "1.0.3",
-  dir = "kong-jwt2header-vphoa342"
+  tag = "1.0.3"
 }
 
 description = {
@@ -25,7 +24,7 @@ dependencies = {
 build = {
   type = "builtin",
   modules = {
-    ["kong.plugins.kong-jwt2header-vphoa342.handler"] = "plugin/handler.lua",
-    ["kong.plugins.kong-jwt2header-vphoa342.schema"] = "plugin/schema.lua",
+    ["kong.plugins.kong-jwt2header-vphoa342.handler"] = "handler.lua",
+    ["kong.plugins.kong-jwt2header-vphoa342.schema"] = "schema.lua"
   }
-} 
+}

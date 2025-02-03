@@ -16,32 +16,46 @@ local JWT2Header = {
 
 function JWT2Header:rewrite(conf)
    kong.service.request.set_header("X-Kong-JWT-Kong-Proceed", "no")
-  kong.log.debug(kong.request.get_header("Authorization") )
+   kong.log.debug(kong.request.get_header("Authorization"))
    local claims = nil
-  local header = nil
-   if kong.request.get_header("Authorization") ~= nil then kong.log.debug(kong.request.get_header("Authorization") )
-    if  string.match(lower(kong.request.get_header("Authorization")), 'bearer') ~= nil then kong.log.debug("2" ..   kong.request.get_path() )
-            local jwt, err = jwt_decoder:new((sub(kong.request.get_header("Authorization"), 8)))
-                if err then
-              return false, { status = 401, message = "Bad token; " .. tostring(err) }
-            end
+   local header = nil
+   if kong.request.get_header("Authorization") ~= nil then 
+     kong.log.debug(kong.request.get_header("Authorization"))
+     if string.match(lower(kong.request.get_header("Authorization")), 'bearer') ~= nil then 
+       kong.log.debug("2" .. kong.request.get_path())
+       local jwt, err = jwt_decoder:new((sub(kong.request.get_header("Authorization"), 8)))
+       if err then
+         return false, { status = 401, message = "Bad token; " .. tostring(err) }
+       end
 
-            claims = jwt.claims
-            header = jwt.header
-           kong.service.request.set_header("X-Kong-JWT-Kong-Proceed", "yes")
-    end
-  end
-  
-
-
-  if kong.request.get_header("X-Kong-JWT-Kong-Proceed") == "yes" then
-    for claim, value in pairs(claims) do
-      if type(claim) == "string" and type(value) == "string" then
-        kong.service.request.set_header("X-Kong-JWT-Claim-" .. claim, value)
-      end
-    end
+       claims = jwt.claims
+       header = jwt.header
+       kong.service.request.set_header("X-Kong-JWT-Kong-Proceed", "yes")
+     end
    end
- 
+
+   if kong.request.get_header("X-Kong-JWT-Kong-Proceed") == "yes" then
+     for claim, value in pairs(claims) do
+       if type(claim) == "string" then
+         -- Handle different value types
+         if type(value) == "string" then
+           kong.service.request.set_header("X-Kong-JWT-Claim-" .. claim, value)
+         elseif type(value) == "number" then
+           kong.service.request.set_header("X-Kong-JWT-Claim-" .. claim, tostring(value))
+         elseif type(value) == "boolean" then
+           kong.service.request.set_header("X-Kong-JWT-Claim-" .. claim, tostring(value))
+         elseif type(value) == "table" then
+           -- Convert arrays and objects to JSON string
+           local ok, json_str = pcall(function() 
+             return require("cjson").encode(value)
+           end)
+           if ok then
+             kong.service.request.set_header("X-Kong-JWT-Claim-" .. claim, json_str)
+           end
+         end
+       end
+     end
+   end
 end
 
 

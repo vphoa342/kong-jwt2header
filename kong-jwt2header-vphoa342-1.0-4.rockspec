@@ -1,9 +1,9 @@
 package = "kong-jwt2header-vphoa342"
-version = "1.0-3"
+version = "1.0-4"
 
 source = {
   url = "git://github.com/vphoa342/kong-jwt2header",
-  tag = "1.0.3"
+  tag = "1.0.4"
 }
 
 description = {
